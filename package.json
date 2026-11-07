@@ -1,0 +1,38 @@
+{
+  "name": "conceptcards-monorepo",
+  "version": "1.0.0",
+  "description": "Collaborative flashcard platform with duplicate prevention, hierarchical organization, and automated spaced-repetition scheduling.",
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "concurrently -n \"API,CLIENT\" -c \"cyan,magenta\" \"npm run dev:api\" \"npm run dev:client\"",
+    "dev:api": "nodemon api/index.js",
+    "dev:client": "npm --prefix client run dev",
+    "start": "node api/index.js",
+    "build": "npm --prefix client install && npm --prefix client run build",
+    "seed": "node scripts/seed.js",
+    "verify": "node scripts/verify.js"
+  },
+  "keywords": [
+    "flashcards",
+    "spaced-repetition",
+    "sm-2",
+    "duplicate-prevention",
+    "hierarchical-decks",
+    "mern",
+    "express",
+    "react",
+    "mongodb"
+  ],
+  "author": "ConceptCards Team",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "concurrently": "^9.1.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.3.2",
+    "nodemon": "^3.1.16"
+  }
+}
