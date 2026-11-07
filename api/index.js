@@ -99,4 +99,5 @@ if (process.env.NODE_ENV !== 'test' && (!process.env.VERCEL || process.env.VERCE
 }
 
 module.exports = app;
+module.exports.default = app;
 
