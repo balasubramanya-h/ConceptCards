@@ -77,8 +77,8 @@ const DeckDetailsPage = () => {
     try {
       setLoading(true);
       const [deckRes, cardsRes] = await Promise.all([
-        api.get(`/decks/${id}`),
-        api.get(`/cards/deck/${id}`),
+        api.get(`/api/decks/${id}`),
+        api.get(`/api/cards/deck/${id}`),
       ]);
 
       if (deckRes.data.success) {
@@ -112,7 +112,7 @@ const DeckDetailsPage = () => {
     debounceTimerRef.current = setTimeout(async () => {
       try {
         setIsCheckingDuplicate(true);
-        const res = await api.post('/cards/check-duplicate', {
+        const res = await api.post('/api/cards/check-duplicate', {
           deckId: id,
           front: cardFront.trim(),
           excludeCardId: editingCard ? editingCard._id : null,
@@ -181,9 +181,9 @@ const DeckDetailsPage = () => {
 
       let res;
       if (editingCard) {
-        res = await api.put(`/cards/${editingCard._id}`, payload);
+        res = await api.put(`/api/cards/${editingCard._id}`, payload);
       } else {
-        res = await api.post('/cards', payload);
+        res = await api.post('/api/cards', payload);
       }
 
       if (res.data.success) {
@@ -206,7 +206,7 @@ const DeckDetailsPage = () => {
   const handleDeleteCard = async (cardId) => {
     if (!window.confirm('Are you sure you want to delete this flashcard?')) return;
     try {
-      await api.delete(`/cards/${cardId}`);
+      await api.delete(`/api/cards/${cardId}`);
       loadDeckAndCards();
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete card');
@@ -222,7 +222,7 @@ const DeckDetailsPage = () => {
       return;
     }
     try {
-      await api.delete(`/decks/${id}`);
+      await api.delete(`/api/decks/${id}`);
       navigate('/dashboard');
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete deck');
@@ -236,7 +236,7 @@ const DeckDetailsPage = () => {
 
     try {
       setCollabLoading(true);
-      const res = await api.post(`/decks/${id}/collaborators`, {
+      const res = await api.post(`/api/decks/${id}/collaborators`, {
         email: collabEmail.trim(),
         role: collabRole,
       });
@@ -255,7 +255,7 @@ const DeckDetailsPage = () => {
 
   const handleRemoveCollaborator = async (userId) => {
     try {
-      await api.delete(`/decks/${id}/collaborators/${userId}`);
+      await api.delete(`/api/decks/${id}/collaborators/${userId}`);
       loadDeckAndCards();
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to remove collaborator');
@@ -267,7 +267,7 @@ const DeckDetailsPage = () => {
     if (!subDeckTitle.trim()) return;
 
     try {
-      const res = await api.post('/decks', {
+      const res = await api.post('/api/decks', {
         title: subDeckTitle.trim(),
         description: subDeckDesc.trim(),
         parentDeck: id,

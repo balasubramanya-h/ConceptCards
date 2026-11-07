@@ -65,9 +65,9 @@ const DashboardPage = () => {
     try {
       setLoading(true);
       const [decksRes, statsRes, treeRes] = await Promise.all([
-        api.get('/decks'),
-        api.get('/study/stats'),
-        api.get('/decks/tree'),
+        api.get('/api/decks'),
+        api.get('/api/study/stats'),
+        api.get('/api/decks/tree'),
       ]);
 
       if (decksRes.data.success) {
@@ -129,7 +129,7 @@ const DashboardPage = () => {
 
     try {
       setIsCreatingDeck(true);
-      const res = await api.post('/decks', {
+      const res = await api.post('/api/decks', {
         title: newDeckTitle.trim(),
         description: newDeckDesc.trim(),
         parentDeck: newDeckParent || null,

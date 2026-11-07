@@ -19,8 +19,8 @@ export const AuthProvider = ({ children }) => {
           setUser(JSON.parse(storedUser));
           setToken(storedToken);
 
-          // Verify token fresh status with /me
-          const res = await api.get('/auth/me');
+          // Verify token fresh status with /api/auth/me
+          const res = await api.get('/api/auth/me');
           if (res.data.success && res.data.user) {
             setUser(res.data.user);
             localStorage.setItem('conceptcards_user', JSON.stringify(res.data.user));
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await api.post('/api/auth/login', { email, password });
       if (res.data.success) {
         const { token: receivedToken, user: receivedUser } = res.data;
         setToken(receivedToken);
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      const res = await api.post('/auth/register', { name, email, password });
+      const res = await api.post('/api/auth/register', { name, email, password });
       if (res.data.success) {
         const { token: receivedToken, user: receivedUser } = res.data;
         setToken(receivedToken);
@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      const res = await api.get('/auth/me');
+      const res = await api.get('/api/auth/me');
       if (res.data.success && res.data.user) {
         setUser(res.data.user);
         localStorage.setItem('conceptcards_user', JSON.stringify(res.data.user));

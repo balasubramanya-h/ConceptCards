@@ -46,7 +46,7 @@ const StudyPage = () => {
     const fetchSession = async () => {
       try {
         setLoading(true);
-        const res = await api.get(`/study/deck/${id}/session`, {
+        const res = await api.get(`/api/study/deck/${id}/session`, {
           params: { mode, includeSubDecks, limit },
         });
 
@@ -101,7 +101,7 @@ const StudyPage = () => {
     try {
       setSubmittingRating(true);
 
-      const res = await api.post('/study/review', {
+      const res = await api.post('/api/study/review', {
         cardId: currentCard._id,
         grade,
         responseTimeMs,

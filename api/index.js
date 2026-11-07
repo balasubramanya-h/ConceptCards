@@ -47,24 +47,24 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
+// Health check endpoint (supports both /api/health and /health)
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({
-    status: 'healthy',
+    status: 'ok',
     service: 'ConceptCards API',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
   });
 });
 
-// Mount modular routes
-app.use('/api/auth', authRoutes);
-app.use('/api/decks', deckRoutes);
-app.use('/api/cards', cardRoutes);
-app.use('/api/study', studyRoutes);
+// Mount modular routes (accepts both prefixed and non-prefixed paths for bulletproof Vercel serverless execution)
+app.use(['/api/auth', '/auth'], authRoutes);
+app.use(['/api/decks', '/decks'], deckRoutes);
+app.use(['/api/cards', '/cards'], cardRoutes);
+app.use(['/api/study', '/study'], studyRoutes);
 
 // 404 handler for unknown API routes
-app.use('/api', (req, res) => {
+app.use(['/api', '/auth', '/decks', '/cards', '/study'], (req, res) => {
   res.status(404).json({
     success: false,
     message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
