@@ -32,6 +32,20 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// URL normalization middleware for Vercel serverless function invocations
+app.use((req, res, next) => {
+  // Strip any serverless function filename artifacts injected into req.url
+  req.url = req.url
+    .replace(/^\/api\/\[\.\.\.slug\](?:\.js)?/, '')
+    .replace(/^\/api\/index(?:\.js)?/, '')
+    .replace(/^\/index(?:\.js)?/, '');
+
+  if (!req.url.startsWith('/')) {
+    req.url = '/' + req.url;
+  }
+  next();
+});
+
 // Database connection middleware for serverless invocations
 app.use(async (req, res, next) => {
   try {
@@ -47,8 +61,8 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Health check endpoint (supports both /api/health and /health)
-app.get(['/api/health', '/health'], (req, res) => {
+// Health check endpoint (supports /api/health, /health, /api)
+app.get(['/api/health', '/health', '/api'], (req, res) => {
   res.json({
     status: 'ok',
     service: 'ConceptCards API',
@@ -57,34 +71,37 @@ app.get(['/api/health', '/health'], (req, res) => {
   });
 });
 
-// Mount modular routes (accepts both prefixed and non-prefixed paths for bulletproof Vercel serverless execution)
+// Mount modular routes (accepts both prefixed /api/* and non-prefixed /* for bulletproof execution)
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/decks', '/decks'], deckRoutes);
 app.use(['/api/cards', '/cards'], cardRoutes);
 app.use(['/api/study', '/study'], studyRoutes);
 
-// 404 handler for unknown API routes
-app.use(['/api', '/auth', '/decks', '/cards', '/study'], (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
-  });
-});
-
 const path = require('path');
 const fs = require('fs');
 
 // Serve static frontend assets if built (supports standalone production mode alongside Vercel serverless)
+const rootDist = path.join(__dirname, '../dist');
 const clientDist = path.join(__dirname, '../client/dist');
-if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
+const staticDist = fs.existsSync(rootDist) ? rootDist : (fs.existsSync(clientDist) ? clientDist : null);
+
+if (staticDist) {
+  app.use(express.static(staticDist));
   app.use((req, res, next) => {
-    if (req.method === 'GET' && !req.originalUrl.startsWith('/api')) {
-      return res.sendFile(path.join(clientDist, 'index.html'));
+    if (req.method === 'GET' && !req.originalUrl.startsWith('/api') && !req.originalUrl.startsWith('/auth')) {
+      return res.sendFile(path.join(staticDist, 'index.html'));
     }
     next();
   });
 }
+
+// 404 handler for unknown routes - always returns structured JSON
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `API endpoint not found: ${req.method} ${req.originalUrl || req.url}`,
+  });
+});
 
 // Centralized error handling middleware
 app.use(errorHandler);

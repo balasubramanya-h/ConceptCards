@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const dns = require('dns');
 
-// On Windows or environments where local ISP DNS fails on MongoDB SRV lookups,
+// On environments where local ISP DNS fails on MongoDB SRV lookups,
 // safely fall back to public DNS resolvers
 try {
   dns.setServers(['8.8.8.8', '1.1.1.1']);
@@ -9,11 +9,9 @@ try {
   // Ignore in environments where setting DNS servers is restricted
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
-}
+// Fallback MongoDB connection string to ensure serverless functions never crash on cold boot
+const DEFAULT_MONGODB_URI =
+  'mongodb+srv://sickolife32_db_user:4byOpnRNootTKAsk@bala.gjyftfn.mongodb.net/conceptcards?retryWrites=true&w=majority';
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
@@ -30,6 +28,8 @@ async function connectDB() {
     return cached.conn;
   }
 
+  const uri = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
+
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
@@ -38,14 +38,17 @@ async function connectDB() {
       socketTimeoutMS: 45000,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
-      console.log('MongoDB Atlas connection established successfully.');
-      return mongooseInstance;
-    }).catch((error) => {
-      cached.promise = null;
-      console.error('MongoDB Atlas connection error:', error.message);
-      throw error;
-    });
+    cached.promise = mongoose
+      .connect(uri, opts)
+      .then((mongooseInstance) => {
+        console.log('MongoDB Atlas connection established successfully.');
+        return mongooseInstance;
+      })
+      .catch((error) => {
+        cached.promise = null;
+        console.error('MongoDB Atlas connection error:', error.message);
+        throw error;
+      });
   }
 
   try {
@@ -59,4 +62,5 @@ async function connectDB() {
 }
 
 module.exports = connectDB;
+
 

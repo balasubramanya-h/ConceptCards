@@ -1,12 +1,17 @@
 import axios from 'axios';
 
 // Base URL configuration:
-// 1. If VITE_API_URL is provided, use it (trimming trailing slash)
+// 1. If VITE_API_URL is provided and valid, use it (preventing localhost in production HTTPS)
 // 2. In Vite dev server, Vite proxy handles '/api' -> http://localhost:5000
 // 3. On Vercel, relative requests to '/api' route directly to the serverless function
 const getBaseURL = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL.replace(/\/$/, '');
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && envUrl.includes('localhost')) {
+      console.warn('VITE_API_URL points to localhost in HTTPS production. Falling back to same-origin relative /api routes.');
+      return '';
+    }
+    return envUrl.replace(/\/$/, '');
   }
   return '';
 };
